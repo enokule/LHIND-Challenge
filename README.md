@@ -23,7 +23,7 @@ Terraform main file creates 3 VMS in Azure Cloud with respective networks. After
 - master.yml: Installs, configures and initializes Kubernetes cluster on the Master node
 - node.yml: Installs configures and joins the worker nodes to the Kubernetes Cluster
 - helm.yml installs and configures Helm in the Kubernetes cluster and uses it to deploy Jenkins in the cluster
-* * *Note: Ansible is run within the terraform in the main.tf file using null_resources (master_ansible, nodes_ansible, helm-jenkins-setup) with the below CLI command (nodes example): * *
+* *Note: Ansible is run within the terraform in the main.tf file using null_resources (master_ansible, nodes_ansible, helm-jenkins-setup) with the below CLI command (nodes example):* *
 ```
 ansible-playbook -u admin_user -i '${element(azurerm_linux_virtual_machine.node.*.public_ip_address, count.index)}', --private-key ${var.ssh_key_private} --become-method=sudo -b --become-user=root /root/lh-azure-cluster/ansible/nodes.yml
 ```

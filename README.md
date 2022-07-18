@@ -22,3 +22,20 @@ Terraform main file creates 3 VMS in Azure Cloud with respective networks. After
 - master.yml: Installs, configures and initializes Kubernetes cluster on the Master node
 - node.yml: Installs configures and joins the worker nodes to the Kubernetes Cluster
 - helm.yml installs and configures Helm in the Kubernetes cluster and uses it to deploy Jenkins in the cluster
+*Note: Ansible is run within the terraform in the main.tf file using null_resources (master_ansible, nodes_ansible, helm-jenkins-setup)
+
+> providers.tf imports Azure as the provider for Terraform
+> variables.tf imports two variables: private and public SSH keys (id_rsa and id_rsa.pub)
+
+> Jenkins folder contains the needed folders for deploying Jenkins in Kubernetes with Helm:
+- jenkins-sa.yaml: creates a service account for Jenkins in the "jenkins" namespace in Kubernetes cluster
+- jenkins-volume.yaml: creates a volume for jenkins which is mounted in /data/jenkins-volume/ in the nodes
+- jenkins-values.yaml: contains the values for the helm chart
+
+> The folder "docker" and "agent" are used to create a jenkins docker image with docker installed inside, but it's not working properly
+
+## **Resources**
+
+- https://docs.microsoft.com/en-us/azure/developer/terraform/create-linux-virtual-machine-with-infrastructure
+- https://www.jenkins.io/doc/book/installing/kubernetes/
+- https://medium.com/@karthikeyan_krishnaswamy/setting-up-a-kubernetes-cluster-on-ubuntu-18-04-4a89c74420f9

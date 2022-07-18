@@ -32,7 +32,7 @@ Terraform main file creates 3 VMS in Azure Cloud with respective networks. After
 - jenkins-volume.yaml: creates a volume for jenkins which is mounted in /data/jenkins-volume/ in the nodes
 - jenkins-values.yaml: contains the values for the helm chart
 
-> The folder "docker" and "agent" are used to create a jenkins docker image with docker installed inside, but it's not working properly
+> The folders "docker" and "agent" are used to create a jenkins docker image with docker installed inside, but it's not working properly
 
 ## **Resources**
 

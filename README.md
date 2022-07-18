@@ -14,8 +14,9 @@ Automation with Terraform and Ansible to deploy a Kubernetes cluster with Helm a
 ## **Project Flow**
 
 > The whole project is done by running the terraform main file (main.tf) with command:
+  ---
   terraform apply --auto-approve
-
+  ---
 Terraform main file creates 3 VMS in Azure Cloud with respective networks. After that installs Kubernetes in all three VMs. On top of Kubernetes it installs helm, with which installs Jenkins as an application inside the Kubernetes cluster.
 
 > Ansible is used to install the followings:

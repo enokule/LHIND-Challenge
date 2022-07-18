@@ -1,0 +1,43 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+
+  - name: Configure helm and install jenkins
+    shell: |
+         kubectl create namespace jenkins
+         wget https://get.helm.sh/helm-v3.9.0-linux-amd64.tar.gz
+         tar -zxvf helm-v3.9.0-linux-amd64.tar.gz
+         mv linux-amd64/helm /usr/local/bin/helm
+         helm repo add jenkinsci https://charts.jenkins.io
+         helm repo update
+         mkdir /home/eno/jenkins
+
+  - name: Copy k8s config for Jenkins
+    copy:
+       src: "{{ item }}"
+       dest: /home/eno/jenkins/
+       owner: root
+       mode: 600
+    with_fileglob:
+    - /root/lh-azure-cluster/jenkins/*
+  - name: Configure helm and install jenkins
+    shell: |
+      cd /home/eno/jenkins/ 
+      kubectl apply -f jenkins-volume.yaml
+      kubectl apply -f jenkins-sa.yaml
+      helm install jenkins -n jenkins -f jenkins-values.yaml jenkinsci/jenkins
+  - name: Get secret json path
+    become: yes
+    shell: |
+      echo "{.data.jenkins-admin-password}"
+    register: json
+
+  - name: Get jenkins secret
+    become: yes
+    command: kubectl get secret -n jenkins jenkins -o jsonpath={{ json.stdout }}
+    register: jenkins_secret
+
+  - name: Get the inital jenkins password
+    become: yes
+    shell: echo {{ jenkins_secret.stdout | b64decode }} > /tmp/jenkins_password

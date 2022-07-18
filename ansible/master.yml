@@ -1,0 +1,106 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+     - name: Update and upgrade apt packages
+       become: true
+       apt:
+        upgrade: yes
+        update_cache: yes 
+
+     - name: disable swap
+       shell: |
+               sudo swapoff -a
+               sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
+     - name: Creates directory
+       file:
+         path: /etc/apt/keyrings
+         state: directory
+         mode: 0775
+
+     - name: install and configure dependencies
+       shell: |
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+     - name: Create kubernetes repo file
+       file:
+         path: "/etc/apt/sources.list.d/docker.list"
+         state: "touch"
+
+     - name: Add K8s Source
+       blockinfile:
+         path: "/etc/apt/sources.list.d/docker.list"
+         block: |
+           deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu focal stable
+
+     - name: Update apt packages
+       apt:
+        update_cache: yes 
+        
+     - name: Install docker
+       shell: |
+              sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+       
+
+
+     - name: install and configure dependencies
+       shell: |
+               sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+    
+     - name: Create kubernetes repo file
+       file:
+         path: "/etc/apt/sources.list.d/kubernetes.list"
+         state: "touch"
+
+     - name: Add K8s Source
+       blockinfile:
+         path: "/etc/apt/sources.list.d/kubernetes.list"
+         block: |
+               deb https://apt.kubernetes.io/ kubernetes-xenial main
+
+     - name: install kubernetes
+       shell: |
+               sudo apt-get update
+               sudo apt-get install -y kubelet kubeadm kubectl
+               sudo apt-mark hold kubelet kubeadm kubectl
+               rm /etc/containerd/config.toml
+               systemctl restart containerd
+    
+  
+  # Initialize the Cluster
+     - name: initialize the cluster
+       shell: kubeadm init --pod-network-cidr=10.244.0.0/16
+
+     - name: create .kube directory
+       file:
+         path: /root/.kube
+         state: directory
+         mode: 0755
+
+     - name: copies admin.conf to user's kube config
+       copy:
+         src: /etc/kubernetes/admin.conf
+         dest: /root/.kube/config
+         remote_src: yes
+         owner: root
+
+     - name: install Pod network
+       become: yes
+       shell: kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml 
+       args:
+         chdir: /root
+        
+     - name: Get the token for joining the worker nodes
+       become: yes
+       shell: kubeadm token create  --print-join-command
+       register: kubernetes_join_command
+
+     - name: Debug
+       debug:
+         msg: "{{ kubernetes_join_command.stdout }}"
+
+     - name: Copy join command to local file.
+       become: yes
+       local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }}" dest="/tmp/kubernetes_join_command" mode=0777

@@ -17,9 +17,9 @@ Automation with Terraform and Ansible to deploy a Kubernetes cluster with Helm a
   ```
   terraform apply --auto-approve
   ```
-Terraform main file creates 3 VMS in Azure Cloud with respective networks. After that installs Kubernetes in all three VMs. On top of Kubernetes it installs helm, with which installs Jenkins as an application inside the Kubernetes cluster.
+**Terraform** main file creates 3 VMS in Azure Cloud with respective networks. After that installs **Kubernetes** in all three VMs. On top of Kubernetes it installs helm, with which installs Jenkins as an application inside the Kubernetes cluster.
 
-> Ansible is used to install the followings:
+> **Ansible** is used to install the followings:
 - **master.yml**: Installs, configures and initializes Kubernetes cluster on the Master node
 - **node.yml**: Installs configures and joins the worker nodes to the Kubernetes Cluster
 - **helm.yml**: installs and configures Helm in the Kubernetes cluster and uses it to deploy Jenkins in the cluster
@@ -29,10 +29,10 @@ __Note: Ansible is run within the terraform in the main.tf file using null_resou
 ansible-playbook -u admin_user -i '${element(azurerm_linux_virtual_machine.node.*.public_ip_address, count.index)}', --private-key ${var.ssh_key_private} --become-method=sudo -b --become-user=root /root/lh-azure-cluster/ansible/nodes.yml
 ```
 
-> providers.tf imports Azure as the provider for Terraform
-> variables.tf imports two variables: private and public SSH keys (id_rsa and id_rsa.pub)
+> **providers.tf** imports Azure as the provider for Terraform
+> **variables.tf** imports two variables: private and public SSH keys (id_rsa and id_rsa.pub)
 
-> Jenkins folder contains the needed folders for deploying Jenkins in Kubernetes with Helm:
+> **Jenkins** folder contains the needed folders for deploying Jenkins in Kubernetes with Helm:
 - **jenkins-sa.yaml**: creates a service account for Jenkins in the "jenkins" namespace in Kubernetes cluster
 - **jenkins-volume.yaml**: creates a volume for jenkins which is mounted in /data/jenkins-volume/ in the nodes
 - **jenkins-values.yaml**: contains the values for the helm chart
